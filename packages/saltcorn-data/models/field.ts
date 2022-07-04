@@ -379,7 +379,8 @@ class Field implements AbstractField {
       label: `${r[this.name]}`,
       value: r[this.name],
     }));
-    return [{ label: "", value: "" }, ...dbOpts];
+    if (this.table && where?.[(this.table as Table)?.pk_name]) return dbOpts;
+    else return [{ label: "", value: "" }, ...dbOpts];
   }
 
   /**
