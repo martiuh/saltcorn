@@ -50,6 +50,7 @@ export function buildApkInContainer(buildDir: string) {
   if (result.status === 0) {
     console.log(result.output.toString());
   } else if (result.status === 1 || result.status === 125) {
+    console.log(result.output.toString());
     // try docker rootless
     spawnOptions.env = {
       DOCKER_HOST: `unix://${process.env.XDG_RUNTIME_DIR}/docker.sock`,
