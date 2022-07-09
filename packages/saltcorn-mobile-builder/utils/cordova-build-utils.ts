@@ -24,6 +24,10 @@ export function prepareBuildDir(buildDir: string, templateDir: string) {
  * @returns
  */
 export function runBuildContainer(buildDir: string, options: any): any {
+  console.log(
+    `> docker run -v ${buildDir}:/saltcorn-mobile-app saltcorn/cordova-builder`
+  );
+
   return spawnSync(
     "docker",
     [
