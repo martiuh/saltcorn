@@ -601,9 +601,15 @@ const render = ({
       })}</form>`;
     }
     if (segment.above) {
-      return segment.above
-        .map((s: any, ix: number) => go(s, isTop, ix))
-        .join("");
+      if (segment.class)
+        return div(
+          { class: segment.class },
+          segment.above.map((s: any, ix: number) => go(s, isTop, ix)).join("")
+        );
+      else
+        return segment.above
+          .map((s: any, ix: number) => go(s, isTop, ix))
+          .join("");
     } else if (segment.besides) {
       const defwidth = Math.round(12 / segment.besides.length);
       const cardDeck =
@@ -613,7 +619,10 @@ const render = ({
       if (cardDeck)
         markup = div(
           {
-            class: `row row-cols-1 row-cols-md-${segment.besides.length} g-4 mb-3`,
+            class: [
+              `row row-cols-1 row-cols-md-${segment.besides.length} g-4 mb-3`,
+              segment.class,
+            ],
             style: segment.style,
           },
           segment.besides.map((t: any, ixb: number) => {
@@ -632,6 +641,7 @@ const render = ({
             class: [
               "row",
               segment.style && segment.style.width ? null : "w-100",
+              segment.class,
             ],
             style: segment.style,
           },
