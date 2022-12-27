@@ -49,7 +49,7 @@ const tableTable = (tables, req) =>
  */
 const tableCard = (tables, req) => ({
   type: "card",
-  class: "welcome-page-entity-list mt-1",
+  class: "welcome-page-entity-list at-top mt-1",
   title: link("/table", req.__("Tables")),
   contents:
     (tables.length <= 1
@@ -102,7 +102,7 @@ const viewTable = (views, req) =>
 const viewCard = (views, req) => ({
   type: "card",
   title: link("/viewedit", req.__("Views")),
-  class: "welcome-page-entity-list mt-1",
+  class: "welcome-page-entity-list at-top mt-1",
   bodyClass: "py-0  pe-0",
   contents:
     (views.length <= 1
@@ -156,7 +156,7 @@ const pageTable = (pages, req) =>
 const pageCard = (pages, req) => ({
   type: "card",
   title: link("/pageedit", req.__("Pages")),
-  class: "welcome-page-entity-list mt-1",
+  class: "welcome-page-entity-list at-top mt-1",
   contents:
     (pages.length <= 1
       ? p(
@@ -217,6 +217,7 @@ const filesTab = async (req) => {
  */
 const usersTab = async (req, users, roleMap) => {
   return div(
+    { class: "h-100" },
     mkTable(
       [
         {
@@ -226,7 +227,8 @@ const usersTab = async (req, users, roleMap) => {
 
         { label: req.__("Role"), key: (r) => roleMap[r.role_id] },
       ],
-      users
+      users,
+      { class: "h-100" }
     ),
     a(
       { href: `/useradmin/new`, class: "btn btn-secondary my-3" },
@@ -371,6 +373,7 @@ const welcome_page = async (req) => {
   return {
     above: [
       {
+        class: "h-50",
         besides: [
           tableCard(tables, req),
           viewCard(views, req),
@@ -378,12 +381,13 @@ const welcome_page = async (req) => {
         ],
       },
       {
+        class: "h-50",
         besides: [
           {
             type: "card",
             //title: req.__("Install pack"),
-            bodyClass: "py-0 pe-0",
-            class: "welcome-page-entity-list mt-2",
+            bodyClass: "py-0 pe-0 h-100",
+            class: "welcome-page-entity-list at-bottom mt-2",
 
             tabContents:
               triggers.length > 0
@@ -401,8 +405,8 @@ const welcome_page = async (req) => {
           {
             type: "card",
             //title: req.__("Learn"),
-            bodyClass: "py-0 pe-0",
-            class: "welcome-page-entity-list mt-2",
+            bodyClass: "py-0 pe-0 h-100",
+            class: "welcome-page-entity-list at-bottom mt-2",
             tabContents:
               users.length > 4
                 ? {
@@ -417,6 +421,7 @@ const welcome_page = async (req) => {
         ],
       },
     ],
+    class: "resize-to-bottom",
   };
 };
 

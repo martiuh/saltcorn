@@ -213,8 +213,12 @@ footer.bs-mobile-nav-footer {
   opacity: 0.5;
 }
 
-.welcome-page-entity-list div.table-responsive {
-  max-height: max(40vh, 300px);
+.welcome-page-entity-list.at-top div.table-responsive {
+  max-height: max(41vh, 300px);
+}
+
+.welcome-page-entity-list.at-bottom div.table-responsive {
+  max-height: max(34vh, 300px);
 }
 
 .welcome-page-entity-list {

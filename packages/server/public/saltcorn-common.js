@@ -519,7 +519,16 @@ function initialize_page() {
       }
     }
   }
-}
+  $(".resize-to-bottom").each((ix, e) => {
+    const $e = $(e);
+    const etop = $e.position().top;
+    const eheight = $e.outerHeight();
+    const wheight = document.documentElement.clientHeight;
+    const newHeight = wheight - etop;
+    if (newHeight > eheight) $e.height(newHeight);
+    console.log({ etop, eheight, wheight, newHeight });
+  });
+} //end initialize_page
 
 $(initialize_page);
 
