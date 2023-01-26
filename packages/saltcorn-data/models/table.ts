@@ -144,7 +144,7 @@ class Table implements AbstractTable {
   description?: string;
   fields?: Field[] | null;
   is_user_group: boolean;
-  ownership?: Ownership;
+  ownership: Ownership;
 
   /**
    * Table constructor
@@ -161,7 +161,7 @@ class Table implements AbstractTable {
     this.is_user_group = !!o.is_user_group;
     this.external = false;
     this.description = o.description;
-    this.ownership = stringToJSON(o.ownership);
+    this.ownership = stringToJSON(o.ownership) || null;
     if (o.fields) this.fields = o.fields.map((f) => new Field(f));
   }
 
@@ -485,24 +485,41 @@ class Table implements AbstractTable {
   ): { notAuthorized?: boolean } | undefined {
     const role = user?.role_id;
 
-    if (
-      role &&
-      role > this.min_role_write &&
-      ((!this.ownership_field_id && !this.ownership_formula) || role === 10)
-    )
+    if (role && role > this.min_role_write && (!this.ownership || role === 10))
       return { notAuthorized: true };
-    if (
-      user &&
-      role < 10 &&
-      role > this.min_role_write &&
-      this.ownership_field_id
-    ) {
-      const owner_field = fields.find((f) => f.id === this.ownership_field_id);
-      if (!owner_field)
-        throw new Error(`Owner field in table ${this.name} not found`);
-      mergeIntoWhere(where, {
-        [owner_field.name]: user.id,
-      });
+    if (user && role < 10 && role > this.min_role_write && this.ownership) {
+      if ("field" in this.ownership) {
+        mergeIntoWhere(where, {
+          [this.ownership.field]: user.id,
+        });
+      }
+      if ("user_field" in this.ownership) {
+        mergeIntoWhere(where, {
+          [this.pk_name]: { in: [user[this.ownership.user_field]] },
+        });
+      }
+      //if ("user_group" in this.ownership) {
+      //}
+      if ("inherit" in this.ownership) {
+        const fnm = this.ownership.inherit;
+        const field = fields.find((f) => f.name === fnm);
+        const table = Table.findOne({ name: field?.reftable_name }) as Table;
+        const thatWhere = {};
+        table?.updateWhereWithOwnership(
+          thatWhere,
+          table.fields as Field[],
+          user
+        );
+        mergeIntoWhere(where, {
+          [fnm]: {
+            inSelect: {
+              where: thatWhere,
+              table: table.name,
+              field: table.pk_name,
+            },
+          },
+        });
+      }
     }
   }
 
