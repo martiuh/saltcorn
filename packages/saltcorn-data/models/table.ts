@@ -246,28 +246,28 @@ class Table implements AbstractTable {
     return [...dbs, ...externals];
   }
 
-  /**
+  /*
    * Get owner column name
    * @param fields - fields list
    * @returns {null|*} null or owner column name
    */
-  owner_fieldname_from_fields(
+  /*owner_fieldname_from_fields(
     fields?: Field[] | null
   ): string | null | undefined {
     if (!this.ownership_field_id || !fields) return null;
     const field = fields.find((f: Field) => f.id === this.ownership_field_id);
     return field?.name;
-  }
+  }*/
 
-  /**
+  /*
    * Get owner column name
    * @returns {Promise<string|null|*>}
    */
-  owner_fieldname(): string | null | undefined {
+  /*owner_fieldname(): string | null | undefined {
     if (this.name === "users") return "id";
     if (!this.ownership_field_id) return null;
     return this.owner_fieldname_from_fields(this.fields);
-  }
+  } */
 
   /**
    * Check if user is owner of row
@@ -278,7 +278,14 @@ class Table implements AbstractTable {
   is_owner(user: any, row: Row): boolean {
     if (!user) return false;
 
-    if (this.ownership_formula && this.fields) {
+    if (!this.ownership) return false;
+
+    if ("field" in this.ownership && this.fields)
+      return row[this.ownership.field] === user.id;
+    if ("user_field" in this.ownership)
+      return user[this.ownership.user_field] === row[this.pk_name];
+    return false;
+    /* {
       const f = get_expression_function(this.ownership_formula, this.fields);
       return !!f(row, user);
     }
@@ -287,7 +294,7 @@ class Table implements AbstractTable {
     if (!field_name && this.name === "users")
       return user && user.id && row && `${row.id}` === `${user.id}`;
 
-    return typeof field_name === "string" && row[field_name] === user.id;
+    return typeof field_name === "string" && ;*/
   }
 
   async ownership_options(): Promise<{ label: string; value: string }[]> {
