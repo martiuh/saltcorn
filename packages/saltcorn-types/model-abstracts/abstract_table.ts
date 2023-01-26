@@ -23,6 +23,7 @@ export type TableCfg = {
   is_user_group?: boolean;
   description?: string;
   fields: FieldCfg[];
+  ownership?: Ownership;
 };
 
 export type TablePack = {
@@ -30,3 +31,10 @@ export type TablePack = {
   constraints?: Array<any>;
   ownership_field_name?: string | null;
 } & TableCfg;
+
+export type Ownership =
+  | { inherit: string }
+  | { field: string }
+  | { user_field: string }
+  | { user_group: { ug_field_name: string; ug_table_name: string } }
+  | null;
