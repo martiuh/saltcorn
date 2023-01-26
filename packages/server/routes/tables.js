@@ -79,33 +79,35 @@ const tableForm = async (table, req) => {
     noSubmitButton: true,
     onChange: "saveAndContinue(this)",
     fields: [
+      {
+        label: req.__("Minimum role to read"),
+        sublabel: req.__(
+          "User must have this role or higher to read rows from the table, unless they are the owner"
+        ),
+        name: "min_role_read",
+        input_type: "select",
+        options: roleOptions,
+        attributes: { asideNext: !table.external },
+      },
       ...(!table.external
         ? [
             {
-              label: req.__("Ownership field"),
-              name: "ownership_field_id",
-              sublabel: req.__(
-                "The user referred to in this field will be the owner of the row"
-              ),
+              label: req.__("Minimum role to write"),
+              name: "min_role_write",
               input_type: "select",
-              options: [
-                { value: "", label: req.__("None") },
-                ...ownership_opts,
-                { value: "_formula", label: req.__("Formula") },
-              ],
+              sublabel: req.__(
+                "User must have this role or higher to edit or create new rows in the table, unless they are the owner"
+              ),
+              options: roleOptions,
             },
             {
-              name: "ownership_formula",
-              label: req.__("Ownership formula"),
-              validator: expressionValidator,
-              type: "String",
-              class: "validate-expression",
-              sublabel:
-                req.__("User is treated as owner if true. In scope: ") +
-                ["user", ...fields.map((f) => f.name)]
-                  .map((fn) => code(fn))
-                  .join(", "),
-              showIf: { ownership_field_id: "_formula" },
+              label: req.__("Ownership"),
+              name: "ownership",
+              sublabel: req.__(
+                "The user referred to will be the owner of the row"
+              ),
+              input_type: "select",
+              options: ownership_opts,
             },
             {
               label: req.__("User group"),
@@ -127,28 +129,10 @@ const tableForm = async (table, req) => {
         ),
         //options: roleOptions,
       },
-      {
-        label: req.__("Minimum role to read"),
-        sublabel: req.__(
-          "User must have this role or higher to read rows from the table, unless they are the owner"
-        ),
-        name: "min_role_read",
-        input_type: "select",
-        options: roleOptions,
-        attributes: { asideNext: !table.external },
-      },
+
       ...(table.external
         ? []
         : [
-            {
-              label: req.__("Minimum role to write"),
-              name: "min_role_write",
-              input_type: "select",
-              sublabel: req.__(
-                "User must have this role or higher to edit or create new rows in the table, unless they are the owner"
-              ),
-              options: roleOptions,
-            },
             {
               label: req.__("Version history"),
               sublabel: req.__(
@@ -165,6 +149,8 @@ const tableForm = async (table, req) => {
     if (table.external) form.hidden("name");
     if (table.external) form.hidden("external");
     form.values = table;
+    if (table.ownership)
+      form.values.ownership = JSON.stringify(table.ownership);
   }
   return form;
 };
@@ -803,8 +789,7 @@ router.get(
         )
     );
     // add table form
-    if (table.ownership_formula && !table.ownership_field_id)
-      table.ownership_field_id = "_formula";
+
     const tblForm = await tableForm(table, req);
     res.sendWrap(req.__(`%s table`, table.name), {
       above: [
@@ -897,20 +882,13 @@ router.post(
       let hasError = false;
       let notify = "";
       if (!rest.versioned) rest.versioned = false;
-      if (rest.ownership_field_id === "_formula") {
-        rest.ownership_field_id = null;
-        const fmlValidRes = expressionValidator(rest.ownership_formula);
-        if (typeof fmlValidRes === "string") {
-          notify = req.__(`Invalid ownership formula: %s`, fmlValidRes);
-          hasError = true;
+      if (rest.ownership) {
+        try {
+          rest.ownership = JSON.parse(rest.ownership);
+        } catch (e) {
+          console.error(e);
         }
-      } else if (
-        typeof rest.ownership_field_id === "string" &&
-        rest.ownership_field_id.startsWith("Fml:")
-      ) {
-        rest.ownership_formula = rest.ownership_field_id.replace("Fml:", "");
-        rest.ownership_field_id = null;
-      } else rest.ownership_formula = null;
+      }
       await table.update(rest);
 
       if (!req.xhr) {

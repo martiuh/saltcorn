@@ -1083,5 +1083,7 @@
 	"User group": "User group",
 	"Add relations to this table in dropdown options for ownership field": "Add relations to this table in dropdown options for ownership field",
 	"You have views with a role to access lower than the table role to read, with no table ownership. This may cause a denial of access. Users need to have table read access to any data displayed.": "You have views with a role to access lower than the table role to read, with no table ownership. This may cause a denial of access. Users need to have table read access to any data displayed.",
-	"Views potentially affected": "Views potentially affected"
+	"Views potentially affected": "Views potentially affected",
+	"Ownership": "Ownership",
+	"The user referred to will be the owner of the row": "The user referred to will be the owner of the row"
 }
