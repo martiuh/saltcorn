@@ -289,15 +289,13 @@ class Table implements AbstractTable {
 
   async ownership_options(): Promise<{ label: string; value: string }[]> {
     const fields = await this.getFields();
-
-    //start with userfields
-    const opts: { label: string; value: string }[] = fields
-      .filter((f) => f.reftable_name === "users")
-      .map((f) => ({ value: `${f.id}`, label: f.name }));
-
     const str = (x: Ownership) => JSON.stringify(x);
+
+    const opts = [{ label: "None", value: str(null) }];
+
     // inherit from all my fks if table has ownership
     for (const field of fields) {
+      //start with userfields
       if (field.is_fkey && field.reftable_name === "users")
         opts.push({
           label: `Field ${field.label}`,
