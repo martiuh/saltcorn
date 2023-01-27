@@ -103,12 +103,12 @@ describe("Table with row ownership field", () => {
       name: "age",
       type: "Integer",
     });
-    const owner = await Field.create({
+    await Field.create({
       table: persons,
       name: "owner",
       type: "Key to users",
     });
-    await persons.update({ ownership_field_id: owner.id });
+    await persons.update({ ownership: { field: "owner" } });
 
     await persons.insertRow({ lastname: "Joe", age: 12 });
     await persons.insertRow({ lastname: "Sam", age: 13, owner: 1 });
