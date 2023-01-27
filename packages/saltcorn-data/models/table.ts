@@ -1718,18 +1718,16 @@ class Table implements AbstractTable {
     const schema = db.getTenantSchemaPrefix();
     const { forUser, forPublic } = opts;
     const role = forUser ? forUser.role_id : forPublic ? 10 : null;
-    if (role && role > this.min_role_read && this.ownership_formula) {
-      const freeVars = freeVariables(this.ownership_formula);
-      add_free_variables_to_joinfields(freeVars, joinFields, fields);
-    }
-    if (role && role > this.min_role_read && this.ownership_field_id) {
-      const owner_field = fields.find((f) => f.id === this.ownership_field_id);
-      if (!owner_field)
-        throw new Error(`Owner field in table ${this.name} not found`);
-      if (!opts.where) opts.where = {};
-      mergeIntoWhere(opts.where, {
-        [owner_field.name]: (forUser as AbstractUser).id,
-      });
+    if (!opts.where) opts.where = {};
+    if (
+      role &&
+      this.updateWhereWithOwnership(
+        opts.where,
+        fields,
+        forUser || { role_id: 10 }
+      )?.notAuthorized
+    ) {
+      return { notAuthorized: true };
     }
 
     for (const [fldnm, { ref, target, through, ontable }] of Object.entries(
@@ -1933,20 +1931,10 @@ class Table implements AbstractTable {
     const fields = await this.getFields();
     const { forUser, forPublic, ...selopts1 } = opts;
     const role = forUser ? forUser.role_id : forPublic ? 10 : null;
-    const { sql, values } = await this.getJoinedQuery(opts);
+    const { sql, values, notAuthorized } = await this.getJoinedQuery(opts);
+    if (notAuthorized) return [];
     const res = await db.query(sql, values);
     if (res.length === 0) return res; // check
-    //console.log(sql);
-    //console.log(res.rows);
-    if (role && role > this.min_role_read) {
-      //check ownership
-      if (forPublic) return [];
-      else if (this.ownership_field_id) {
-        //already dealt with by changing where
-      } else if (this.ownership_formula) {
-        res.rows = res.rows.filter((row: Row) => this.is_owner(forUser, row));
-      } else return []; //no ownership
-    }
 
     const calcRow = apply_calculated_fields(res.rows, fields);
 
