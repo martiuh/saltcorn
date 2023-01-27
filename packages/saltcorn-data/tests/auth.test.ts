@@ -50,12 +50,18 @@ const createPersonsTable = async () => {
 describe("updateWhereWithOwnership", () => {
   it("should update where with field", async () => {
     const persons = await createPersonsTable();
+    const fields = await persons.getFields();
+
+    expect(
+      persons.updateWhereWithOwnership({}, fields, non_owner_user)
+        ?.notAuthorized
+    ).toBe(true);
+
     await persons.update({ ownership: { field: "owner" } });
 
     await persons.insertRow({ lastname: "Joe", age: 12 });
     await persons.insertRow({ lastname: "Sam", age: 13, owner: 1 });
     const w = {};
-    const fields = await persons.getFields();
     persons.updateWhereWithOwnership(w, fields, non_owner_user);
     expect(w).toEqual({ owner: 6 });
     await persons.delete();
