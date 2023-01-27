@@ -403,7 +403,6 @@ const renderRows = async (
   };
   await set_join_fieldviews({ table, layout, fields });
 
-  const owner_field = await table.owner_fieldname();
   const subviewExtra = { ...extra };
   if (extra.req?.generate_email) {
     // no mjml markup for for nested subviews, only for the top view
@@ -461,10 +460,7 @@ const renderRows = async (
     });
     const user_id = extra.req.user ? extra.req.user.id : null;
 
-    const is_owner =
-      table.ownership_formula && user_id && role > table.min_role_read
-        ? await table.is_owner(extra.req.user, row)
-        : owner_field && user_id && row[owner_field] === user_id;
+    const is_owner = await table.is_owner(extra.req.user, row);
 
     return render(
       row,
